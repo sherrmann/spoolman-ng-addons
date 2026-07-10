@@ -66,8 +66,12 @@ Tests exactly what an end user does, including the add-a-repository UI flow.
       still there (data lives in the add-on's `/data`)
 - [ ] **Options mapping**: set `api_token` in the add-on Configuration tab, restart;
       `GET /api/v1/spool` without a header → 401, with
-      `Authorization: Bearer <token>` → 200; `/api/v1/health` stays open (that
-      exemption is what keeps HA's watchdog working)
+      `Authorization: Bearer <token>` → 200.
+      `/api/v1/health` behavior is **version-dependent**: on base image ≤ 2026.7.6 the
+      health endpoint (and `/docs`, `/auth/status`, `/auth/login`) wrongly requires the
+      token too — do NOT configure a Supervisor `watchdog:` against it while a token is
+      set on those versions. Fixed after 2026.7.6 (Spoolman-NG PR #210): health stays
+      open with a token set, and a watchdog becomes safe.
 - [ ] **Uninstall/reinstall** leaves no errors in the Supervisor log
 
 ## Path B — Add-on devcontainer (for iterating on the packaging)
