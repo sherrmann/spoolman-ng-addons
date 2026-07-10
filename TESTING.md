@@ -1,8 +1,15 @@
 # Testing handoff: Spoolman NG add-on on a live Home Assistant
 
 Instructions for verifying this add-on against a real Home Assistant Supervisor —
-written as a self-contained handoff for a Claude Code session (VS Code, Windows,
-Docker Desktop), but equally usable by a human.
+written as a self-contained handoff for a Claude Code session (VS Code with Docker
+on Windows **or** Linux), but equally usable by a human.
+
+**Host choice**: a Linux host (e.g. dual-booted Linux Mint) is the smoother option —
+KVM/virt-manager runs the HAOS VM better than Hyper-V/VirtualBox, and Docker is
+native rather than behind WSL2. Windows works for every path too; pick by
+convenience. One warning either way: the *Supervised* installer (HA on a raw OS)
+officially supports **Debian only** — Mint is Ubuntu-based and not supported, so do
+not take that route; use the HAOS VM instead.
 
 ## Context
 
@@ -28,11 +35,16 @@ add-on store — it cannot. The three viable paths on a Windows workstation:
 
 Tests exactly what an end user does, including the add-a-repository UI flow.
 
-1. Download the official HAOS VM image for your hypervisor from
-   <https://www.home-assistant.io/installation/windows/>:
-   - Hyper-V → `.vhdx` (needs Windows Pro; enable Hyper-V, create a Gen-2 VM,
-     disable Secure Boot, ≥2 GB RAM, attach the VHDX, network = external switch)
-   - VirtualBox → `.vdi` (Gen: Linux Other 64-bit, EFI enabled, bridged network)
+1. Download the official HAOS VM image for your hypervisor
+   (<https://www.home-assistant.io/installation/> → Windows or Linux):
+   - **Linux / KVM (recommended on Mint)** → `.qcow2`:
+     `sudo apt install qemu-kvm libvirt-daemon-system virt-manager`, add yourself
+     to the `libvirt` group (re-login), then in virt-manager: import existing disk
+     → the qcow2 → OS "Generic Linux", ≥2 GB RAM / 2 vCPU, and in the details
+     enable **UEFI firmware (OVMF)** before first boot; default NAT network is fine.
+   - Windows Hyper-V → `.vhdx` (needs Windows Pro; Gen-2 VM, Secure Boot off,
+     ≥2 GB RAM, external switch)
+   - Windows VirtualBox → `.vdi` (Linux Other 64-bit, EFI enabled, bridged network)
 2. Boot, wait for onboarding at `http://homeassistant.local:8123` (or the VM's IP),
    create a user.
 3. **Settings → Add-ons → Add-on Store → ⋮ → Repositories** → add
@@ -82,15 +94,26 @@ wrapper image **builds and boots** on each architecture via binfmt emulation.
 (The base images themselves are already QEMU-boot-tested in the main repo's CI;
 this covers the add-on layer.)
 
-```powershell
+Linux (bash) — on Windows use the PowerShell variant below:
+
+```bash
 docker run --privileged --rm tonistiigi/binfmt --install arm64,arm
 
 # once per arch: armv7 → linux/arm/v7, arm64 → linux/arm64, amd64 → linux/amd64
+docker buildx build --platform linux/arm/v7 \
+  --build-arg BUILD_FROM=ghcr.io/sherrmann/spoolman-ng:2026.7.6 \
+  -t spoolman-addon-smoke:armv7 --load ./spoolman_ng/
+
+# fake the Supervisor's options file, then boot it
+mkdir -p data && echo '{"db_type": "sqlite"}' > data/options.json
+docker run --rm --platform linux/arm/v7 -p 8000:8000 -v "$PWD/data:/data" spoolman-addon-smoke:armv7
+```
+
+```powershell
+docker run --privileged --rm tonistiigi/binfmt --install arm64,arm
 docker buildx build --platform linux/arm/v7 `
   --build-arg BUILD_FROM=ghcr.io/sherrmann/spoolman-ng:2026.7.6 `
   -t spoolman-addon-smoke:armv7 --load .\spoolman_ng\
-
-# fake the Supervisor's options file, then boot it
 mkdir data; '{"db_type": "sqlite"}' | Out-File -Encoding ascii data\options.json
 docker run --rm --platform linux/arm/v7 -p 8000:8000 -v ${PWD}\data:/data spoolman-addon-smoke:armv7
 ```
