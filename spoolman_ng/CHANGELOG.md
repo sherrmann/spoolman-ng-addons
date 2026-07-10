@@ -3,6 +3,13 @@
 The add-on version mirrors [Spoolman NG releases](https://github.com/sherrmann/Spoolman-NG/releases);
 each entry links the matching server release notes (upstream tags are `v`-prefixed).
 
+## 2026.7.7
+
+- Fix: with `api_token` (or user accounts) set, the server wrongly required authentication on
+  `/api/v1/health`, `/docs` and even the login endpoint itself. Health is open again, so a
+  Supervisor `watchdog` is safe to use alongside a token from this version on.
+- Server changes: <https://github.com/sherrmann/Spoolman-NG/releases/tag/v2026.7.7>
+
 ## 2026.7.6
 
 - First store-installable packaging: repository manifest at the git root, installable by URL, with
