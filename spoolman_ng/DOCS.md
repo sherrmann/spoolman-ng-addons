@@ -56,8 +56,30 @@ variables):
 Full server documentation (all environment variables, backups, monitoring, NFC, label printing)
 lives in the [Spoolman NG repository](https://github.com/sherrmann/Spoolman-NG/tree/master/docs).
 
-## Integrations
+## Seeing Spoolman data inside Home Assistant
+
+The add-on runs the Spoolman *server*. To get **entities** into Home Assistant — per-spool
+devices with remaining-weight/usage sensors for dashboards and automations (e.g. "notify me
+when PLA drops below 200 g") — pair it with the community
+[Spoolman integration](https://github.com/Disane87/spoolman-homeassistant), installable via HACS:
+
+1. Install the integration through HACS and restart Home Assistant.
+2. Add it under **Settings → Devices & Services** and point it at the add-on:
+   `http://<home-assistant-host>:8000` (or your remapped port).
+3. Each spool appears as a device with sensors; the author also publishes a matching
+   Lovelace card for dashboards.
+
+Notes:
+- The integration speaks the same REST/websocket API as every other Spoolman client, so it
+  works against the add-on unchanged.
+- If you set `api_token`, check that your integration version supports bearer
+  authentication before enabling it — on a LAN-only Home Assistant install it is fine to
+  leave the token empty.
+
+## Printer integrations
 
 The add-on exposes the standard Spoolman REST API on port `8000`, so Moonraker, OctoPrint,
-the HACS integration, and every other upstream-compatible client work unchanged — point them at
-`http://<home-assistant-host>:8000`.
+and every other upstream-compatible client work unchanged — point them at
+`http://<home-assistant-host>:8000`. Printer-side state (which spool is loaded, live usage
+updates while printing) flows through Moonraker/Klipper or OctoPrint as usual and shows up
+in Spoolman automatically.
