@@ -28,6 +28,13 @@ browse to `http://<home-assistant-host>:8000` directly. There is no embedded (in
 Home Assistant serves ingress under a rotating per-session path, which the server's static
 `SPOOLMAN_BASE_PATH` cannot follow — a known limitation tracked upstream.
 
+**Sidebar shortcut (works today, no ingress needed):** Home Assistant can embed any URL as a
+dashboard — **Settings → Dashboards → Add dashboard → Webpage**, URL
+`http://<home-assistant-host>:8000`. That puts Spoolman in the HA sidebar like a native panel.
+Caveat: the embed is an iframe, so it works when you open Home Assistant over plain HTTP on your
+LAN; if you access HA over HTTPS the browser blocks the plain-HTTP frame (mixed content) — use
+the OPEN WEB UI button instead in that case.
+
 **If port 8000 is already taken** on your host (the add-on then fails to start with a
 "port is already allocated" error in its log), remap the host side under the add-on's
 **Configuration → Network** settings — no rebuild needed, and the OPEN WEB UI button follows the
