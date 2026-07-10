@@ -34,3 +34,11 @@ from the published `ghcr.io/sherrmann/spoolman-ng` multi-arch image (`amd64`, `a
 
 Issues and feature requests belong on the
 [Spoolman NG issue tracker](https://github.com/sherrmann/Spoolman-NG/issues).
+
+## License & attribution
+
+[MIT](LICENSE), like the software it packages. Spoolman NG is a community-maintained
+continuation of the original [Spoolman](https://github.com/Donkie/Spoolman) by
+[Donkie](https://github.com/Donkie) (Daniel Hultgren), whose copyright the license retains.
+This packaging follows the [Home Assistant add-on](https://developers.home-assistant.io/docs/add-ons)
+conventions.
