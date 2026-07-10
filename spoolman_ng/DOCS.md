@@ -21,6 +21,19 @@ persistent `/data` volume.
 The add-on is updated with every Spoolman NG release; updates appear in the Home Assistant UI
 like any other add-on update.
 
+## Opening the web UI
+
+The UI is served on **host port 8000** — use the **OPEN WEB UI** button on the add-on page, or
+browse to `http://<home-assistant-host>:8000` directly. There is no embedded (ingress) panel yet:
+Home Assistant serves ingress under a rotating per-session path, which the server's static
+`SPOOLMAN_BASE_PATH` cannot follow — a known limitation tracked upstream.
+
+**If port 8000 is already taken** on your host (the add-on then fails to start with a
+"port is already allocated" error in its log), remap the host side under the add-on's
+**Configuration → Network** settings — no rebuild needed, and the OPEN WEB UI button follows the
+new port automatically. Integrations that talk to the REST API directly (Moonraker, OctoPrint,
+the HACS integration) must then use the remapped port too.
+
 ## Data
 
 The add-on stores everything — the default SQLite database, backups and cache — under its persistent

@@ -15,6 +15,11 @@ ports:
   8000/tcp: 8000
 ports_description:
   8000/tcp: Spoolman web UI and REST API
+# "OPEN WEB UI" button on the add-on page. [PORT:8000] resolves to whatever HOST port the
+# user mapped for container port 8000, so the button survives a port remap. Ingress (an
+# embedded, tokenized panel) is a known limitation for now: HA serves ingress under a
+# rotating per-session path, and the server's SPOOLMAN_BASE_PATH is static at startup.
+webui: http://[HOST]:[PORT:8000]
 # Defaults to the bundled SQLite database (stored in the add-on's persistent /data volume). Set a
 # db_type plus connection details to use an external PostgreSQL/MariaDB/CockroachDB instead.
 options:
