@@ -3,6 +3,10 @@
 The add-on version mirrors [Spoolman NG releases](https://github.com/sherrmann/Spoolman-NG/releases);
 each entry links the matching server release notes (upstream tags are `v`-prefixed).
 
+## 2026.7.8
+
+- Server changes: <https://github.com/sherrmann/Spoolman-NG/releases/tag/v2026.7.8>
+
 ## 2026.7.7
 
 - Fix: with `api_token` (or user accounts) set, the server wrongly required authentication on
