@@ -4,4 +4,4 @@
 build_from:
   amd64: ghcr.io/sherrmann/spoolman-ng:2026.7.7
   aarch64: ghcr.io/sherrmann/spoolman-ng:2026.7.7
-  armv7: ghcr.io/sherrmann/spoolman-ng:2026.7.6
+  armv7: ghcr.io/sherrmann/spoolman-ng:2026.7.7
