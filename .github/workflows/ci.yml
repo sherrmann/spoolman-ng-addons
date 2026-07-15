@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Home Assistant add-on linter
+        uses: frenck/action-addon-linter@v2
+        with:
+          path: ./spoolman_ng
+  build-smoke:
+    name: build-smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the add-on image (amd64) from its declared base
+        run: |
+          BUILD_FROM=$(sed -n 's/^  amd64: //p' spoolman_ng/build.yaml)
+          echo "Building FROM ${BUILD_FROM}"
+          docker build --build-arg "BUILD_FROM=${BUILD_FROM}" -t addon-smoke spoolman_ng/
