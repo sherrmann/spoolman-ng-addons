@@ -3,6 +3,10 @@
 The add-on version mirrors [Spoolman NG releases](https://github.com/sherrmann/Spoolman-NG/releases);
 each entry links the matching server release notes (upstream tags are `v`-prefixed).
 
+## 2026.8.2
+
+- Server changes: <https://github.com/sherrmann/Spoolman-NG/releases/tag/v2026.8.2>
+
 ## 2026.8.1
 
 - Server changes: <https://github.com/sherrmann/Spoolman-NG/releases/tag/v2026.8.1>
