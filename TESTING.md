@@ -14,15 +14,47 @@ not take that route; use the HAOS VM instead.
 ## Context
 
 - This repository packages the [Spoolman NG](https://github.com/sherrmann/Spoolman-NG)
-  server as a Home Assistant add-on. It has **never been exercised against a live
-  Supervisor** — everything below exists to close that gap.
+  server as a Home Assistant add-on. Direct installation has been reported working; native
+  ingress still needs verification against a live Supervisor using the checklist below.
 - The add-on is a thin wrapper: `spoolman_ng/Dockerfile` layers a launcher
   (`run.sh`) over the published multi-arch image
   `ghcr.io/sherrmann/spoolman-ng:<version>` (see `spoolman_ng/build.yaml` for the
   per-arch mapping). `run.sh` maps add-on options from `/data/options.json` to
-  `SPOOLMAN_*` env vars and stores data under `/data`.
+  `SPOOLMAN_*` env vars and stores data under `/data`. `supervise.py` runs the original
+  Spoolman entrypoint alongside nginx. nginx accepts ingress on internal port 8099 only
+  from Supervisor (`172.30.32.2`) and proxies to Spoolman's existing port 8000.
 - Version in `spoolman_ng/config.yaml` tracks Spoolman NG releases automatically
   (pushed by the main repo's release pipeline).
+  Packaging-only revisions use a fourth version component without changing the base image tag.
+
+## Automated checks
+
+The launcher tests use only Python's standard library and need no Docker or network:
+
+```bash
+sh -n spoolman_ng/run.sh
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+Build the actual add-on, validate nginx, and exercise both listeners:
+
+```bash
+BUILD_FROM=$(sed -n 's/^  amd64: //p' spoolman_ng/build.yaml)
+docker build --build-arg "BUILD_FROM=${BUILD_FROM}" -t addon-smoke spoolman_ng/
+docker run --rm --entrypoint nginx addon-smoke -t
+python3 tests/smoke.py addon-smoke
+```
+
+Use the matching `aarch64` or `armv7` entry in `build.yaml` when building on those hosts.
+The smoke runner creates an isolated Docker network with subnet `172.30.32.0/24` to reproduce
+Supervisor's source IP, plus a disposable data volume. Run it on a development Docker host,
+not HAOS or a host already using that subnet. It removes its containers, network and volume
+afterwards. It does not publish any host ports.
+
+The checks cover session-prefix rotation, HTML/config/manifest cache behavior, bundled JS/CSS,
+direct access, API authentication with and without a token, inventory writes, actual WebSocket
+events, an untrusted source being denied ingress, restart persistence, clean shutdown and failure
+propagation from either service. They do not replace the live Home Assistant browser checks below.
 
 ## The one thing to know first
 
@@ -53,13 +85,20 @@ Tests exactly what an end user does, including the add-a-repository UI flow.
      and a "Spoolman NG Add-ons" section appears with the add-on and its icon.
 4. Open the add-on → **Install**. This builds the wrapper image locally on the VM
    (pulls `ghcr.io/sherrmann/spoolman-ng:<version>` first) — allow several minutes.
-5. **Start** it, then open `http://<vm-ip>:8000`.
+5. **Start** it, then select **Open Web UI** and enable **Show in sidebar**.
 
 ### Verification checklist (Path A)
 
 - [ ] Repository URL accepted; add-on listed with icon and Documentation tab
 - [ ] Install succeeds (check the add-on Log tab for build errors)
 - [ ] Add-on starts; log shows uvicorn serving on port 8000
+- [ ] **Open Web UI** opens the embedded panel; **Show in sidebar** adds a working shortcut
+- [ ] Panel loads over external HTTPS and in the companion app without external access to 8000
+- [ ] Navigation, deep-link refresh, create/edit and live updates work inside the panel
+- [ ] Two HA sessions can use the panel independently; reopening after session expiry works
+- [ ] With host port 8000 disabled in Network settings, ingress still works
+- [ ] Existing Spoolman token/account login and readonly permissions work inside the panel
+- [ ] Panel visibility follows the administrator-only setting
 - [ ] Web UI loads at `:8000`; create a manufacturer + filament + spool
 - [ ] `GET http://<vm-ip>:8000/api/v1/health` returns healthy
 - [ ] **Persistence**: restart the add-on (and reboot the VM once) — the spool is

@@ -14,32 +14,45 @@ persistent `/data` volume.
 ## Installation
 
 1. Add this repository to the add-on store (**Settings → Add-ons → Add-on Store → ⋮ → Repositories**):
-   `https://github.com/sherrmann/spoolman-ng-addons`
+   `https://github.com/CedricGatay/spoolman-ng-addons#home-assistant-ingress`
 2. Install **Spoolman NG** from the store and start it.
-3. Open the web UI on port `8000` of your Home Assistant host.
+3. Select **Open Web UI** on the add-on page. Enable **Show in sidebar** for a shortcut.
+
+This ingress preview installs as a separate add-on from the upstream repository, with its own
+data directory. Existing inventory is not copied automatically. See the
+[installation and migration guide](https://github.com/CedricGatay/spoolman-ng-addons/blob/home-assistant-ingress/INSTALL_INGRESS.md)
+before switching an existing installation.
 
 The add-on is updated with every Spoolman NG release; updates appear in the Home Assistant UI
 like any other add-on update.
 
 ## Opening the web UI
 
-The UI is served on **host port 8000** — use the **OPEN WEB UI** button on the add-on page, or
-browse to `http://<home-assistant-host>:8000` directly. There is no embedded (ingress) panel yet:
-Home Assistant serves ingress under a rotating per-session path, which the server's static
-`SPOOLMAN_BASE_PATH` cannot follow — a known limitation tracked upstream.
+Select **Open Web UI** on the add-on page to open Spoolman inside Home Assistant using
+**ingress**. Enable **Show in sidebar** on that same page to add **Spoolman NG** to the sidebar.
+The panel is available to Home Assistant administrators.
 
-**Sidebar shortcut (works today, no ingress needed):** Home Assistant can embed any URL as a
-dashboard — **Settings → Dashboards → Add dashboard → Webpage**, URL
-`http://<home-assistant-host>:8000`. That puts Spoolman in the HA sidebar like a native panel.
-Caveat: the embed is an iframe, so it works when you open Home Assistant over plain HTTP on your
-LAN; if you access HA over HTTPS the browser blocks the plain-HTTP frame (mixed content) — use
-the OPEN WEB UI button instead in that case.
+Ingress uses your existing Home Assistant connection, including HTTPS, remote access and the
+companion app. Once Home Assistant itself is reachable remotely, Spoolman is reachable through
+it too; no separate Spoolman port forwarding or webpage dashboard is needed. Home Assistant
+requires a valid session before forwarding requests. If you configured a Spoolman API token or
+Spoolman user accounts, Spoolman's own login still applies inside the panel.
+
+**Direct access and integrations:** `http://<home-assistant-host>:8000` remains available for
+printer integrations and direct browser access. This route uses Spoolman's own authentication,
+independently of Home Assistant. If you only use ingress, you may disable the host port under
+**Configuration → Network**. Keep it enabled for clients that use the REST API directly.
+The internal ingress port `8099` is reserved for Supervisor and is not exposed on the host.
 
 **If port 8000 is already taken** on your host (the add-on then fails to start with a
 "port is already allocated" error in its log), remap the host side under the add-on's
-**Configuration → Network** settings — no rebuild needed, and the OPEN WEB UI button follows the
-new port automatically. Integrations that talk to the REST API directly (Moonraker, OctoPrint,
+**Configuration → Network** settings — no rebuild needed; ingress is independent of that mapping.
+Integrations that talk to the REST API directly (Moonraker, OctoPrint,
 the HACS integration) must then use the remapped port too.
+
+**QR labels and PWA:** Ingress URLs belong to a Home Assistant session. Set Spoolman's `base_url`
+web setting to a stable direct URL before printing QR labels. The installable PWA/service worker
+is available only through direct access; the embedded panel uses Home Assistant's app instead.
 
 ## Data
 

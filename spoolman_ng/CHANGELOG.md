@@ -1,7 +1,17 @@
 # Changelog
 
-The add-on version mirrors [Spoolman NG releases](https://github.com/sherrmann/Spoolman-NG/releases);
-each entry links the matching server release notes (upstream tags are `v`-prefixed).
+The add-on version follows [Spoolman NG releases](https://github.com/sherrmann/Spoolman-NG/releases),
+with an optional fourth component for packaging-only updates. Server release tags are `v`-prefixed.
+
+## 2026.9.2.1
+
+- Add native Home Assistant ingress: **Open Web UI** opens the embedded panel and
+  **Show in sidebar** adds a Spoolman NG shortcut for administrators.
+- Access the panel through your existing remote Home Assistant connection without exposing
+  a separate Spoolman port. Existing Spoolman authentication remains in effect.
+- Preserve direct port 8000 for printer integrations and standalone access.
+- Add container checks for ingress paths, authentication, WebSockets, persistence and shutdown.
+- Server image remains `2026.9.2`.
 
 ## 2026.9.2
 

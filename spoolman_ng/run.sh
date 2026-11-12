@@ -1,7 +1,6 @@
 #!/bin/sh
 # Home Assistant add-on launcher (#89): translate add-on options into the SPOOLMAN_* environment
-# variables the server reads, keep data in the persistent /data volume, then hand off to the image's
-# own entrypoint (which drops privileges and starts uvicorn).
+# variables the server reads, keep data in the persistent /data volume, and start both services.
 set -e
 
 OPTIONS=/data/options.json
@@ -29,7 +28,8 @@ fi
 # Persist Spoolman's data (and the default SQLite database) in the add-on's /data volume, owned by
 # the unprivileged app user the image runs as.
 export SPOOLMAN_DIR_DATA=/data
+export SPOOLMAN_HA_INGRESS=TRUE
 mkdir -p /data
 chown -R 1000:1000 /data 2>/dev/null || true
 
-exec /home/app/spoolman/entrypoint.sh
+exec python3 /supervise.py
