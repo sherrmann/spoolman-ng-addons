@@ -5,8 +5,7 @@ Home Assistant add-on — no separate Docker host needed. The add-on wraps the p
 multi-arch `ghcr.io/sherrmann/spoolman-ng` image and stores all data in the add-on's
 persistent `/data` volume.
 
-> ⚠️ **Experimental.** This packaging has had limited exposure to live Supervisor installs.
-> Please report problems on the [Spoolman NG issue tracker](https://github.com/sherrmann/Spoolman-NG/issues).
+Please report problems on the [Spoolman NG issue tracker](https://github.com/sherrmann/Spoolman-NG/issues).
 
 > This is different from the third-party [HACS integration](https://github.com/Disane87/spoolman-homeassistant),
 > which *connects* Home Assistant to an existing Spoolman instance. This add-on *runs* Spoolman.
@@ -14,14 +13,15 @@ persistent `/data` volume.
 ## Installation
 
 1. Add this repository to the add-on store (**Settings → Add-ons → Add-on Store → ⋮ → Repositories**):
-   `https://github.com/CedricGatay/spoolman-ng-addons#home-assistant-ingress`
+   `https://github.com/sherrmann/spoolman-ng-addons`
 2. Install **Spoolman NG** from the store and start it.
 3. Select **Open Web UI** on the add-on page. Enable **Show in sidebar** for a shortcut.
 
-This ingress preview installs as a separate add-on from the upstream repository, with its own
-data directory. Existing inventory is not copied automatically. See the
-[installation and migration guide](https://github.com/CedricGatay/spoolman-ng-addons/blob/home-assistant-ingress/INSTALL_INGRESS.md)
-before switching an existing installation.
+Updating an existing installation from this repository preserves its configuration and inventory
+in `/data`; no reinstall or data transfer is needed to enable ingress. Installing from a different
+repository or branch creates a separate add-on. See the
+[installation and upgrade guide](https://github.com/sherrmann/spoolman-ng-addons/blob/master/INSTALL_INGRESS.md)
+if you are moving from another repository.
 
 The add-on is updated with every Spoolman NG release; updates appear in the Home Assistant UI
 like any other add-on update.
@@ -31,6 +31,8 @@ like any other add-on update.
 Select **Open Web UI** on the add-on page to open Spoolman inside Home Assistant using
 **ingress**. Enable **Show in sidebar** on that same page to add **Spoolman NG** to the sidebar.
 The panel is available to Home Assistant administrators.
+
+If switching between the classic and new Spoolman UI leaves an error page, refresh the page.
 
 Ingress uses your existing Home Assistant connection, including HTTPS, remote access and the
 companion app. Once Home Assistant itself is reachable remotely, Spoolman is reachable through

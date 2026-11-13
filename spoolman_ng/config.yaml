@@ -1,5 +1,5 @@
 # Home Assistant Supervisor add-on manifest for Spoolman NG (#89).
-# EXPERIMENTAL: ingress still needs validation against a live Supervisor.
+# Installation and ingress validated on a live Home Assistant instance; see TESTING.md.
 name: Spoolman NG
 version: "2026.9.2.1"
 slug: spoolman_ng

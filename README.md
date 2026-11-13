@@ -4,22 +4,20 @@ Home Assistant add-on repository for [**Spoolman NG**](https://github.com/sherrm
 the community-maintained continuation of Spoolman: run the filament-inventory server as a
 Supervisor add-on, no separate Docker host needed.
 
-[![Add repository to my Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FCedricGatay%2Fspoolman-ng-addons%23home-assistant-ingress)
-
-This branch is an **ingress preview** of the upstream add-on. Read
-[the installation and inventory migration guide](INSTALL_INGRESS.md) before switching an
-existing installation. The branch suffix in the repository URL is required.
+[![Add repository to my Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fsherrmann%2Fspoolman-ng-addons)
 
 ## Installation
 
 1. Click the badge above, or add this repository manually under
    **Settings → Add-ons → Add-on Store → ⋮ → Repositories**:
-   `https://github.com/CedricGatay/spoolman-ng-addons#home-assistant-ingress`
+   `https://github.com/sherrmann/spoolman-ng-addons`
 2. Install **Spoolman NG** from the store and start it.
 3. Select **Open Web UI** on the add-on page. Enable **Show in sidebar** for a shortcut.
 
 Configuration options (external databases, API token) and details are in the add-on's
 **Documentation** tab — or in [`spoolman_ng/DOCS.md`](spoolman_ng/DOCS.md).
+For existing installations and moves between repositories, see the
+[installation and upgrade guide](INSTALL_INGRESS.md).
 
 ## Add-ons
 

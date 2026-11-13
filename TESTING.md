@@ -14,8 +14,9 @@ not take that route; use the HAOS VM instead.
 ## Context
 
 - This repository packages the [Spoolman NG](https://github.com/sherrmann/Spoolman-NG)
-  server as a Home Assistant add-on. Direct installation has been reported working; native
-  ingress still needs verification against a live Supervisor using the checklist below.
+  server as a Home Assistant add-on. Installation and native ingress have been validated on a
+  live Home Assistant instance; see the validation record below. The checklist remains available
+  for future releases and additional environments.
 - The add-on is a thin wrapper: `spoolman_ng/Dockerfile` layers a launcher
   (`run.sh`) over the published multi-arch image
   `ghcr.io/sherrmann/spoolman-ng:<version>` (see `spoolman_ng/build.yaml` for the
@@ -26,6 +27,22 @@ not take that route; use the HAOS VM instead.
 - Version in `spoolman_ng/config.yaml` tracks Spoolman NG releases automatically
   (pushed by the main repo's release pipeline).
   Packaging-only revisions use a fourth version component without changing the base image tag.
+
+## Validation record — 2026-11-13
+
+- **Live Home Assistant: passed.** CedricGatay confirmed that the installed add-on works as
+  expected on their instance, including the ingress/sidebar use that prompted this change.
+  Both classic and new UI access were confirmed; the first switch to the new UI needed a page
+  refresh. This is validation reported by the operator, not a remotely executed test run.
+- **Automated validation: passed.** Add-on lint, four launcher lifecycle tests, nginx configuration
+  validation, and the container integration checks passed. Local builds and container checks also
+  passed on amd64, aarch64 and armv7, with foreign architectures under emulation.
+- The live instance's Home Assistant version and architecture were not recorded. Individual
+  scenarios such as external HTTPS, companion-app access and readonly-account permissions were
+  not reported separately; no individual pass is inferred for those scenarios.
+
+The checklists below are reusable test procedures, rather than outstanding merge requirements
+for this validated release.
 
 ## Automated checks
 
@@ -174,8 +191,9 @@ docker run --rm --platform linux/arm/v7 -p 8000:8000 -v ${PWD}\data:/data spoolm
   add-on directory is a direct child (that layout is exactly why this repo exists).
 - Install fails pulling the base image → confirm the tag in `build.yaml` exists on
   GHCR (`docker manifest inspect ghcr.io/sherrmann/spoolman-ng:<version>`).
-- Add-on starts then dies → Log tab; `run.sh` is the first suspect (it must end by
-  exec-ing `/home/app/spoolman/entrypoint.sh`).
+- Add-on starts then dies → Log tab; `run.sh` maps the options and execs `/supervise.py`.
+  The supervisor starts `/home/app/spoolman/entrypoint.sh` and nginx; either service exiting
+  stops the container, so check the service exit message and preceding log lines.
 - Port collision on 8000 → change the host port in the add-on's Network settings.
 
 ## Report back
