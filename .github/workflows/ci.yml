@@ -2,13 +2,22 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, home-assistant-ingress]
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
+  unit:
+    name: launcher-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check launcher syntax and service lifecycle
+        run: |
+          sh -n spoolman_ng/run.sh
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
   lint:
     name: lint
     runs-on: ubuntu-latest
@@ -28,3 +37,7 @@ jobs:
           BUILD_FROM=$(sed -n 's/^  amd64: //p' spoolman_ng/build.yaml)
           echo "Building FROM ${BUILD_FROM}"
           docker build --build-arg "BUILD_FROM=${BUILD_FROM}" -t addon-smoke spoolman_ng/
+      - name: Validate nginx configuration
+        run: docker run --rm --entrypoint nginx addon-smoke -t
+      - name: Exercise ingress, direct API, persistence and service lifecycle
+        run: python3 tests/smoke.py addon-smoke

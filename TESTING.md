@@ -14,15 +14,64 @@ not take that route; use the HAOS VM instead.
 ## Context
 
 - This repository packages the [Spoolman NG](https://github.com/sherrmann/Spoolman-NG)
-  server as a Home Assistant add-on. It has **never been exercised against a live
-  Supervisor** — everything below exists to close that gap.
+  server as a Home Assistant add-on. Installation and native ingress have been validated on a
+  live Home Assistant instance; see the validation record below. The checklist remains available
+  for future releases and additional environments.
 - The add-on is a thin wrapper: `spoolman_ng/Dockerfile` layers a launcher
   (`run.sh`) over the published multi-arch image
   `ghcr.io/sherrmann/spoolman-ng:<version>` (see `spoolman_ng/build.yaml` for the
   per-arch mapping). `run.sh` maps add-on options from `/data/options.json` to
-  `SPOOLMAN_*` env vars and stores data under `/data`.
+  `SPOOLMAN_*` env vars and stores data under `/data`. `supervise.py` runs the original
+  Spoolman entrypoint alongside nginx. nginx accepts ingress on internal port 8099 only
+  from Supervisor (`172.30.32.2`) and proxies to Spoolman's existing port 8000.
 - Version in `spoolman_ng/config.yaml` tracks Spoolman NG releases automatically
   (pushed by the main repo's release pipeline).
+  Packaging-only revisions use a fourth version component without changing the base image tag.
+
+## Validation record — 2026-11-13
+
+- **Live Home Assistant: passed.** CedricGatay confirmed that the installed add-on works as
+  expected on their instance, including the ingress/sidebar use that prompted this change.
+  Both classic and new UI access were confirmed; the first switch to the new UI needed a page
+  refresh. This is validation reported by the operator, not a remotely executed test run.
+- **Automated validation: passed.** Add-on lint, four launcher lifecycle tests, nginx configuration
+  validation, and the container integration checks passed. Local builds and container checks also
+  passed on amd64, aarch64 and armv7, with foreign architectures under emulation.
+- The live instance's Home Assistant version and architecture were not recorded. Individual
+  scenarios such as external HTTPS, companion-app access and readonly-account permissions were
+  not reported separately; no individual pass is inferred for those scenarios.
+
+The checklists below are reusable test procedures, rather than outstanding merge requirements
+for this validated release.
+
+## Automated checks
+
+The launcher tests use only Python's standard library and need no Docker or network:
+
+```bash
+sh -n spoolman_ng/run.sh
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+Build the actual add-on, validate nginx, and exercise both listeners:
+
+```bash
+BUILD_FROM=$(sed -n 's/^  amd64: //p' spoolman_ng/build.yaml)
+docker build --build-arg "BUILD_FROM=${BUILD_FROM}" -t addon-smoke spoolman_ng/
+docker run --rm --entrypoint nginx addon-smoke -t
+python3 tests/smoke.py addon-smoke
+```
+
+Use the matching `aarch64` or `armv7` entry in `build.yaml` when building on those hosts.
+The smoke runner creates an isolated Docker network with subnet `172.30.32.0/24` to reproduce
+Supervisor's source IP, plus a disposable data volume. Run it on a development Docker host,
+not HAOS or a host already using that subnet. It removes its containers, network and volume
+afterwards. It does not publish any host ports.
+
+The checks cover session-prefix rotation, HTML/config/manifest cache behavior, bundled JS/CSS,
+direct access, API authentication with and without a token, inventory writes, actual WebSocket
+events, an untrusted source being denied ingress, restart persistence, clean shutdown and failure
+propagation from either service. They do not replace the live Home Assistant browser checks below.
 
 ## The one thing to know first
 
@@ -53,13 +102,20 @@ Tests exactly what an end user does, including the add-a-repository UI flow.
      and a "Spoolman NG Add-ons" section appears with the add-on and its icon.
 4. Open the add-on → **Install**. This builds the wrapper image locally on the VM
    (pulls `ghcr.io/sherrmann/spoolman-ng:<version>` first) — allow several minutes.
-5. **Start** it, then open `http://<vm-ip>:8000`.
+5. **Start** it, then select **Open Web UI** and enable **Show in sidebar**.
 
 ### Verification checklist (Path A)
 
 - [ ] Repository URL accepted; add-on listed with icon and Documentation tab
 - [ ] Install succeeds (check the add-on Log tab for build errors)
 - [ ] Add-on starts; log shows uvicorn serving on port 8000
+- [ ] **Open Web UI** opens the embedded panel; **Show in sidebar** adds a working shortcut
+- [ ] Panel loads over external HTTPS and in the companion app without external access to 8000
+- [ ] Navigation, deep-link refresh, create/edit and live updates work inside the panel
+- [ ] Two HA sessions can use the panel independently; reopening after session expiry works
+- [ ] With host port 8000 disabled in Network settings, ingress still works
+- [ ] Existing Spoolman token/account login and readonly permissions work inside the panel
+- [ ] Panel visibility follows the administrator-only setting
 - [ ] Web UI loads at `:8000`; create a manufacturer + filament + spool
 - [ ] `GET http://<vm-ip>:8000/api/v1/health` returns healthy
 - [ ] **Persistence**: restart the add-on (and reboot the VM once) — the spool is
@@ -135,8 +191,9 @@ docker run --rm --platform linux/arm/v7 -p 8000:8000 -v ${PWD}\data:/data spoolm
   add-on directory is a direct child (that layout is exactly why this repo exists).
 - Install fails pulling the base image → confirm the tag in `build.yaml` exists on
   GHCR (`docker manifest inspect ghcr.io/sherrmann/spoolman-ng:<version>`).
-- Add-on starts then dies → Log tab; `run.sh` is the first suspect (it must end by
-  exec-ing `/home/app/spoolman/entrypoint.sh`).
+- Add-on starts then dies → Log tab; `run.sh` maps the options and execs `/supervise.py`.
+  The supervisor starts `/home/app/spoolman/entrypoint.sh` and nginx; either service exiting
+  stops the container, so check the service exit message and preceding log lines.
 - Port collision on 8000 → change the host port in the add-on's Network settings.
 
 ## Report back

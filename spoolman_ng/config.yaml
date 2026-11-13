@@ -1,7 +1,7 @@
 # Home Assistant Supervisor add-on manifest for Spoolman NG (#89).
-# EXPERIMENTAL: not yet exercised against a live Supervisor.
+# Installation and ingress validated on a live Home Assistant instance; see TESTING.md.
 name: Spoolman NG
-version: "2026.9.2"
+version: "2026.9.2.1"
 slug: spoolman_ng
 description: Track your 3D-printer filament spool inventory (community-maintained Spoolman).
 url: https://github.com/sherrmann/Spoolman-NG
@@ -15,11 +15,12 @@ ports:
   8000/tcp: 8000
 ports_description:
   8000/tcp: Spoolman web UI and REST API
-# "OPEN WEB UI" button on the add-on page. [PORT:8000] resolves to whatever HOST port the
-# user mapped for container port 8000, so the button survives a port remap. Ingress (an
-# embedded, tokenized panel) is a known limitation for now: HA serves ingress under a
-# rotating per-session path, and the server's SPOOLMAN_BASE_PATH is static at startup.
-webui: http://[HOST]:[PORT:8000]
+# Home Assistant authenticates and proxies the embedded UI. The ingress listener is
+# internal only; port 8000 remains available for printer integrations and direct access.
+# Use HA's defaults: ingress port 8099 and an administrator-only sidebar panel.
+ingress: true
+panel_title: Spoolman NG
+panel_icon: mdi:printer-3d
 # Defaults to the bundled SQLite database (stored in the add-on's persistent /data volume). Set a
 # db_type plus connection details to use an external PostgreSQL/MariaDB/CockroachDB instead.
 options:

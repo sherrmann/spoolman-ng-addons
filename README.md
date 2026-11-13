@@ -12,10 +12,12 @@ Supervisor add-on, no separate Docker host needed.
    **Settings → Add-ons → Add-on Store → ⋮ → Repositories**:
    `https://github.com/sherrmann/spoolman-ng-addons`
 2. Install **Spoolman NG** from the store and start it.
-3. Open the web UI on port `8000` of your Home Assistant host.
+3. Select **Open Web UI** on the add-on page. Enable **Show in sidebar** for a shortcut.
 
 Configuration options (external databases, API token) and details are in the add-on's
 **Documentation** tab — or in [`spoolman_ng/DOCS.md`](spoolman_ng/DOCS.md).
+For existing installations and moves between repositories, see the
+[installation and upgrade guide](INSTALL_INGRESS.md).
 
 ## Add-ons
 
@@ -29,6 +31,8 @@ The add-on version tracks Spoolman NG releases: every release of
 [sherrmann/Spoolman-NG](https://github.com/sherrmann/Spoolman-NG/releases) pushes a matching
 version bump here, and Home Assistant then offers the update automatically. The add-on builds
 from the published `ghcr.io/sherrmann/spoolman-ng` multi-arch image (`amd64`, `aarch64`, `armv7`).
+Packaging-only releases add a fourth component (for example, add-on `2026.9.2.1` still
+uses server image `2026.9.2`).
 
 ## Support
 
